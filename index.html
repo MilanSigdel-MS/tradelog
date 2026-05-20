@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📊 Trading Logbook</title>
+  <script
+src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background: linear-gradient(to right, #e0f7fa, #ffffff);
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 0.8rem 1.5rem;
+      background: #0288d1;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+    header:hover {
+        background: #0277bd;
+    }
+    header span {
+      font-size: 1.8rem;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    .nav-container {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1.2rem 1rem;
+      background: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .nav-btn {
+      padding: 10px 20px;
+      border: 1px solid #0288d1;
+      background: #fff;
+      color: #0288d1;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    .nav-btn:hover, .nav-btn.active {
+        background: #0288d1;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .content-view {
+      display: none;
+    }
+    .content-view.active {
+      display: block;
+    }
+    .container {
+        padding: 0 1rem;
+    }
+    form, .summary, .charts, .footer, .backup-container, .table-card {
+      background: #ffffff;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin: 1.2rem 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    input, button, textarea {
+      margin: 0.5rem 0;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      background: #0288d1;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #0277bd;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      table-layout: fixed; /* Helps in controlling column widths */
+      word-wrap: break-word; /* Ensures long words don't overflow */
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+    th {
+      background: #e1f5fe;
+      color: #333;
+    }
+    .summary h2 {
+      margin: 0.5rem 0;
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.3rem;
+      border-radius: 8px;
+    }
+    .summary p {
+      margin: 0.4rem 0;
+      font-size: 1rem;
+      text-align: center;
+    }
+    .charts canvas {
+      background: #fafafa;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .footer {
+      text-align: center;
+      font-size: 0.95rem;
+      padding: 1rem;
+      background: #0288d1;
+      color: #fff;
+      border-radius: 0;
+      margin: 1.2rem 0 0 0;
+    }
+    .footer small {
+      display: block;
+      font-style: italic;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      opacity: 0.9;
+    }
+    #deleteRecordsSection {
+      display: none;
+      background: #fff8f8;
+      padding: 1.2rem;
+      margin-top: 1.2rem;
+      border-radius: 10px;
+      border: 1px solid #d32f2f;
+      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+    }
+    .delete-menu-btn {
+      background: #d32f2f;
+    }
+    .delete-menu-btn:hover {
+      background: #c62828;
+    }
+    .checkbox-list {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      text-align: left;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    label {
+      display: block;
+      margin: 5px 0;
+    }
+
+    @media(min-width: 992px) {
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+    }
+
+    @media(max-width: 768px) {
+      .nav-container {
+        flex-wrap: wrap;
+      }
+      header {
+        flex-direction: column;
+        text-align: center;
+        gap: 5px;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      h3 {
+        font-size: 1.1rem;
+      }
+      .nav-btn {
+        font-size: 0.9rem;
+        padding: 8px 15px;
+      }
+      #tradeTable th, #tradeTable td {
+        font-size: 0.8rem; /* Further reduced font size for better fit */
+        padding: 10px 4px; /* Reduced horizontal padding */
+      }
+      .summary p {
+        font-size: 0.9rem;
+      }
+      #tradingPerformanceChart {
+        height: 300px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header onclick="showView('mainView')">
+    <span>📊</span>
+    <h1>Trading Logbook</h1>
+  </header>
+
+  <div class="nav-container">
+    <button class="nav-btn" id="dataBtn" onclick="showView('dataView', this)">Add Trading Journal 📝</button>
+  </div>
+  
+  <div class="container">
+    <div id="dataView" class="content-view">
+        <form id="tradeForm">
+            <h3>Enter New Trade Details</h3>
+            <input type="text" id="stockName" placeholder="Stock Name (e.g., AAPL)" required />
+            <input type="number" id="tradedAmount" placeholder="Traded Amount (Rs)" min="1" required />
+            <input type="number" id="profitLoss" placeholder="Profit/Loss (Rs)" required />
+            <textarea id="note" placeholder="Note / Strategy (Optional)"></textarea>
+            <button type="submit">Add Record</button>
+        </form>
+        <div class="backup-container">
+            <h3>🛡️ Backup or Restore Data</h3>
+            <p>Save your data to a file or restore it from a previous backup.</p>
+            <button onclick="backupData()">📤 Backup Data</button>
+            <br /><br />
+            <input type="file" id="restoreFile" accept=".json" />
+            <button onclick="restoreData()">📥 Restore Data</button>
+        </div>
+    </div>
+
+    <div id="mainView" class="content-view active">
+        <div class="summary" id="summaryStats"></div>
+        <div class="charts">
+            <canvas id="tradingPerformanceChart" height="450"></canvas>
+        </div>
+        <div class="table-card">
+            <table id="tradeTable">
+                <thead>
+                    <tr>
+                    <th>Date</th>
+                    <th>Stock</th>
+                    <th>Amount (Rs)</th>
+                    <th>P/L (Rs)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div style="padding: 1.5rem 1.5rem 0 1.5rem;">
+                <button class="delete-menu-btn" onclick="toggleDeleteMenu()">🗑️ Delete Records</button>
+            </div>
+            <div id="deleteRecordsSection" style="margin: 1.2rem 1.5rem; padding: 1.2rem; border-radius: 10px;">
+                <h3>Select Records to Delete:</h3>
+                <div>
+                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" />
+                    <label for="selectAll"><strong>Select All</strong></label>
+                </div>
+                <div class="checkbox-list" id="deleteList"></div>
+                <button onclick="deleteSelectedRecords()">Delete Selected</button>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Developed by Milan Sigdel
+    <small>📧 milansigdel.ms@gmail.com</small>
+  </div>
+
+  <script>
+    let trades = JSON.parse(localStorage.getItem("trades")) || [];
+    const tableBody = document.querySelector("#tradeTable tbody");
+    const summaryStats = document.getElementById("summaryStats");
+    let tradeChart = null; 
+
+    function saveToLocal() {
+      localStorage.setItem("trades", JSON.stringify(trades));
+    }
+
+    function render() {
+      let tableHtml = "";
+      let totalProfit = 0, win = 0, loss = 0, totalTraded = 0;
+
+      const sortedTrades = [...trades].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      sortedTrades.forEach((trade) => {
+        totalProfit += trade.profitLoss;
+        totalTraded += trade.tradedAmount;
+        if (trade.profitLoss >= 0) {
+          win++;
+        } else {
+          loss++;
+        }
+        const date = new Date(trade.date).toLocaleDateString();
+        const profitPercent = ((trade.profitLoss / trade.tradedAmount) * 100).toFixed(2);
+        
+        tableHtml += `
+          <tr>
+            <td>${date}</td>
+            <td style="cursor:pointer; color:#0288d1; font-weight: 500;" onclick="showNote('${trade.note || 'No note for this trade.'}')">${trade.stockName}</td>
+            <td style="cursor:pointer;" onclick="showTradedAmountDetails('${trade.stockName}')">${trade.tradedAmount.toLocaleString()}</td>
+            <td style="color: ${trade.profitLoss >= 0 ? 'green' : 'red'}; font-weight: bold; cursor:pointer;" onclick="showProfitLossDetails('${trade.stockName}')">
+              ${trade.profitLoss.toLocaleString()} (${profitPercent}%)
+            </td>
+          </tr>`;
+      });
+      
+      tableBody.innerHTML = tableHtml;
+
+      const netPLPercent = (totalTraded > 0 ? (totalProfit / totalTraded) * 100 : 0).toFixed(2);
+      const winRate = (trades.length > 0 ? (win / trades.length) * 100 : 0).toFixed(2);
+      const lossRate = (trades.length > 0 ? (loss / trades.length) * 100 : 0).toFixed(2);
+
+      summaryStats.innerHTML = `
+        <h2 style="background:${totalProfit >= 0 ? '#d4edda' : '#f8d7da'}; color:${totalProfit >= 0 ? '#155724' : '#721c24'}; cursor: pointer;" onclick="showProfitLossBreakdown()">
+          ${totalProfit >= 0 ? 'Net Profit' : 'Net Loss'}: Rs ${totalProfit.toLocaleString()} (${netPLPercent}%)
+        </h2>
+        <p><strong>Total Amount Traded:</strong> Rs ${totalTraded.toLocaleString()}</p>
+        <p><strong>Total Trades:</strong> ${trades.length}</p>
+        <p>
+          <span style="color:green; cursor:pointer; font-weight:bold;" onclick="showWinList()">Wins: ${win} (${winRate}%)</span> | 
+          <span style="color:red; cursor:pointer; font-weight:bold;" onclick="showLossList()">Losses: ${loss} (${lossRate}%)</span>
+        </p>`;
+      
+      drawCharts();
+      generateDeleteChecklist();
+    }
+
+    function drawCharts() {
+      if (tradeChart) {
+        tradeChart.destroy();
+      }
+
+      let performanceData = [];
+      let currentCumulativePL = 0;
+      let currentCumulativeTradedAmount = 0;
+      const sortedTrades = [...trades].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      sortedTrades.forEach(t => {
+        currentCumulativePL += t.profitLoss;
+        currentCumulativeTradedAmount += t.tradedAmount;
+        const cumulativePercent = currentCumulativeTradedAmount > 0 ? (currentCumulativePL / currentCumulativeTradedAmount) * 100 : 0;
+        performanceData.push({
+          date: new Date(t.date).toLocaleDateString(),
+          cumulativePL: currentCumulativePL,
+          cumulativePercent: cumulativePercent,
+          stockName: t.stockName,
+          individualPL: t.profitLoss,
+          individualTradedAmount: t.tradedAmount
+        });
+      });
+      
+      const ctx = document.getElementById("tradingPerformanceChart").getContext('2d');
+      tradeChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: performanceData.map(d => d.stockName),
+          datasets: [{
+            label: "Net Profit/Loss %",
+            data: performanceData.map(d => d.cumulativePercent),
+            borderColor: (performanceData.at(-1)?.cumulativePercent ?? 0) >= 0 ? '#2e7d32' : '#d32f2f',
+            backgroundColor: (performanceData.at(-1)?.cumulativePercent ?? 0) >= 0 ? 'rgba(75, 192, 192, 0.2)' : 'rgba(255, 99, 132, 0.2)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            title: {
+              display: true,
+              text: "📈 Cumulative Performance (%)",
+              font: { size: 18 }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.85)',
+              titleFont: { size: 16, weight: 'bold' },
+              bodyFont: { size: 13 },
+              padding: 12,
+              displayColors: false,
+              callbacks: {
+                title: function(tooltipItems) {
+                    const i = tooltipItems[0].dataIndex;
+                    const dataPoint = performanceData[i];
+                    return `🗓️ ${dataPoint.date}`;
+                },
+                label: function(context) {
+                    const i = context.dataIndex;
+                    const dataPoint = performanceData[i];
+                    const individualPercent = ((dataPoint.individualPL / dataPoint.individualTradedAmount) * 100 || 0).toFixed(2);
+                    const plIcon = dataPoint.individualPL >= 0 ? '📈' : '📉';
+
+                    const cumulativeLine = `💰 Net P/L: Rs ${dataPoint.cumulativePL.toLocaleString()} (${dataPoint.cumulativePercent.toFixed(2)}%)`;
+                    const stockLine = `🧾 Stock: ${dataPoint.stockName}`;
+                    const tradeLine = `${plIcon} Trade P/L: Rs ${dataPoint.individualPL.toLocaleString()} (${individualPercent}%)`;
+                    
+                    return [cumulativeLine, '', stockLine, tradeLine];
+                }
+              }
+            }
+          },
+          scales: {
+            x: { 
+              display: true,
+              ticks: {
+                  font: {
+                      size: 10
+                  },
+                  autoSkip: true,
+                  maxRotation: 45,
+                  minRotation: 0
+              }
+            },
+            y: { 
+              display: true,
+              title: {
+                display: true,
+                text: 'Cumulative Return %'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function showProfitLossBreakdown() {
+        let totalWinAmount = 0;
+        let totalLossAmount = 0;
+        let totalTraded = 0;
+
+        trades.forEach(trade => {
+            totalTraded += trade.tradedAmount;
+            if (trade.profitLoss >= 0) {
+                totalWinAmount += trade.profitLoss;
+            } else {
+                totalLossAmount += trade.profitLoss;
+            }
+        });
+
+        if (totalTraded === 0) {
+            alert("No trades recorded to show a breakdown.");
+            return;
+        }
+
+        const winPercent = ((totalWinAmount / totalTraded) * 100).toFixed(2);
+        const lossPercent = ((totalLossAmount / totalTraded) * 100).toFixed(2);
+
+        const breakdownMessage = 
+            `Profit & Loss Breakdown\n\n` +
+            `🟩 Total Profit Earned: Rs ${totalWinAmount.toLocaleString()} (${winPercent}% of total traded)\n` +
+            `🟥 Total Loss Incurred: Rs ${totalLossAmount.toLocaleString()} (${Math.abs(lossPercent)}% of total traded)`;
+
+        alert(breakdownMessage);
+    }
+
+    function showWinList() {
+      const winningTrades = trades.filter(t => t.profitLoss >= 0);
+      if (winningTrades.length === 0) {
+        alert("No winning trades to show.");
+        return;
+      }
+      const winList = winningTrades.map((t, index) => `${index + 1}. ${t.stockName} (P/L: Rs ${t.profitLoss.toLocaleString()})`).join('\n');
+      alert('🏆 Winning Trades:\n\n' + winList);
+    }
+
+    function showLossList() {
+      const losingTrades = trades.filter(t => t.profitLoss < 0);
+      if (losingTrades.length === 0) {
+        alert("No losing trades to show.");
+        return;
+      }
+      const lossList = losingTrades.map((t, index) => `${index + 1}. ${t.stockName} (P/L: Rs ${t.profitLoss.toLocaleString()})`).join('\n');
+      alert('💔 Losing Trades:\n\n' + lossList);
+    }
+
+    function showNote(note) {
+      alert('Trade Note:\n\n' + note);
+    }
+
+    function showTradedAmountDetails(stockName) {
+        const allTradesForStock = trades.filter(t => t.stockName === stockName);
+        const totalTradedForStock = allTradesForStock.reduce((sum, t) => sum + t.tradedAmount, 0);
+        const totalTradedOverall = trades.reduce((sum, t) => sum + t.tradedAmount, 0);
+        const percentOfTotal = totalTradedOverall > 0 ? ((totalTradedForStock / totalTradedOverall) * 100).toFixed(2) : 0;
+        
+        alert(
+            `Stock: ${stockName}\n\n` +
+            `Total Amount Traded for this Stock: Rs ${totalTradedForStock.toLocaleString()}\n` +
+            `(${percentOfTotal}% of total amount traded)`
+        );
+    }
+
+    function showProfitLossDetails(stockName) {
+        const allTradesForStock = trades.filter(t => t.stockName === stockName);
+        const totalProfitForStock = allTradesForStock.reduce((sum, t) => sum + t.profitLoss, 0);
+        const totalTradedForStock = allTradesForStock.reduce((sum, t) => sum + t.tradedAmount, 0);
+        const profitPercentForStock = totalTradedForStock > 0 ? ((totalProfitForStock / totalTradedForStock) * 100).toFixed(2) : 0;
+
+        alert(
+            `Stock: ${stockName}\n\n`+
+            `Total Profit/Loss for this Stock: Rs ${totalProfitForStock.toLocaleString()}\n` +
+            `(Overall ${profitPercentForStock}% return for this stock)`
+        );
+    }
+    
+    function toggleDeleteMenu() {
+      const section = document.getElementById("deleteRecordsSection");
+      section.style.display = section.style.display === "none" || section.style.display === "" ? "block" : "none";
+    }
+
+    function generateDeleteChecklist() {
+      const deleteList = document.getElementById("deleteList");
+      deleteList.innerHTML = trades.map((t, i) =>
+        `<label><input type="checkbox" class="deleteCheck" value="${i}"> ${new Date(t.date).toLocaleDateString()} - ${t.stockName} (P/L: Rs ${t.profitLoss})</label>`
+      ).reverse().join("");
+    }
+
+    function toggleSelectAll(checkbox) {
+      document.querySelectorAll(".deleteCheck").forEach(cb => cb.checked = checkbox.checked);
+    }
+
+    function deleteSelectedRecords() {
+      const selectedIndexes = Array.from(document.querySelectorAll(".deleteCheck:checked")).map(cb => parseInt(cb.value));
+      if (!selectedIndexes.length) {
+        alert("Please select at least one record to delete.");
+        return;
+      }
+      const confirmation = prompt(`Type "DELETE" to permanently remove ${selectedIndexes.length} record(s).`);
+      if (confirmation !== "DELETE") {
+        alert("Deletion cancelled. Incorrect confirmation text.");
+        return;
+      }
+      trades = trades.filter((_, i) => !selectedIndexes.includes(i));
+      saveToLocal();
+      render();
+      toggleDeleteMenu();
+    }
+
+    function showView(viewId, activeBtn = null) {
+        document.querySelectorAll('.content-view').forEach(view => view.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        
+        document.getElementById(viewId).classList.add('active');
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+    }
+
+    function backupData() {
+      if (trades.length === 0) {
+        alert("No data to backup.");
+        return;
+      }
+      const blob = new Blob([JSON.stringify(trades, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `trades_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function restoreData() {
+      const fileInput = document.getElementById("restoreFile");
+      const file = fileInput.files[0];
+      if (!file) {
+        alert("Please select a JSON backup file first.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (!Array.isArray(data) || (data.length > 0 && !data[0].hasOwnProperty('stockName'))) {
+            throw new Error("Invalid format");
+          }
+          if (confirm("This will overwrite your current data. Are you sure you want to restore?")) {
+            trades = data;
+            saveToLocal();
+            render();
+            alert("Data restored successfully!");
+            showView('mainView');
+          }
+        } catch {
+          alert("Error: The selected file is not a valid backup file.");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    document.getElementById("tradeForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const stockName = document.getElementById("stockName").value.trim();
+      const tradedAmount = parseFloat(document.getElementById("tradedAmount").value);
+      const profitLoss = parseFloat(document.getElementById("profitLoss").value);
+      const note = document.getElementById("note").value.trim();
+      if (!stockName || isNaN(tradedAmount) || isNaN(profitLoss) || tradedAmount <= 0) {
+        return alert("Please enter valid input for all required fields.");
+      }
+      trades.push({ stockName, tradedAmount, profitLoss, note, date: new Date().toISOString() });
+      saveToLocal();
+      e.target.reset();
+      alert("Trade added successfully!");
+      render();
+      showView('mainView');
+    });
+
+    // Initial setup on page load
+    render();
+    if (trades.length > 0) {
+        showView('mainView');
+    } else {
+        showView('dataView', document.getElementById('dataBtn'));
+    }
+  </script>
+
+</body>
+</html>
